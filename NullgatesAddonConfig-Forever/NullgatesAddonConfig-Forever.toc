@@ -1,0 +1,10 @@
+## Interface: 16001
+## Title: Nullgate's Addon Config - Forever
+## Notes: Centralized configuration hub for Nullgate's standalone addons.
+## Author: Nullgate Studios
+## Version: 1.2.0
+## SavedVariables: NullgatesConfigDB
+## X-License: Restricted - Source Available (All Rights Reserved, No Derivatives)
+
+Core.lua
+UI.lua

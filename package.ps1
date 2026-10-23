@@ -1,5 +1,5 @@
 <#
-    Bleakfiber's Addon Config - Forever
+    Nullgate's Addon Config - Forever
     Automated Packaging Script
     Usage:
         .\package.ps1
@@ -13,8 +13,8 @@ param (
 
 $ErrorActionPreference = "Stop"
 $rootDir = $PSScriptRoot
-$addonDir = Join-Path $rootDir "BleakfibersAddonConfig-Forever"
-$tocFile = Join-Path $addonDir "BleakfibersAddonConfig-Forever.toc"
+$addonDir = Join-Path $rootDir "NullgatesAddonConfig-Forever"
+$tocFile = Join-Path $addonDir "NullgatesAddonConfig-Forever.toc"
 $coreFile = Join-Path $addonDir "Core.lua"
 $changelogFile = Join-Path $rootDir "changelog.md"
 
@@ -73,7 +73,7 @@ if (-not (Test-Path $zipsDir)) {
 }
 
 # Create Zip Archive directly in \zips
-$zipName = "BleakfibersAddonConfig-Forever $Version.zip"
+$zipName = "NullgatesAddonConfig-Forever $Version.zip"
 $zipPath = Join-Path $zipsDir $zipName
 
 Write-Host "Compressing addon into zips/$zipName..." -ForegroundColor Cyan

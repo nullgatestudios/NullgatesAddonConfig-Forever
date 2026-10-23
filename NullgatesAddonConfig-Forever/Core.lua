@@ -1,11 +1,11 @@
 --[[
-    Bleakfiber's Addon Config - Forever
+    Nullgate's Addon Config - Forever
     Core.lua - Namespace, Module Registry, Event Handling & Slash Commands
 ]]
 
 -- Global namespace
-BleakfibersAddonConfigForever = BleakfibersAddonConfigForever or {}
-local BAC = BleakfibersAddonConfigForever
+NullgatesAddonConfigForever = NullgatesAddonConfigForever or {}
+local BAC = NullgatesAddonConfigForever
 
 -- Module registry and ordered keys
 BAC.modules = {}
@@ -27,7 +27,7 @@ local DB_DEFAULTS = {
 
 --[[-----------------------------------------------------------------------------
     Public API: RegisterModule
-    @param moduleID   string: Unique identifier for the module (e.g. "BleakHUD")
+    @param moduleID   string: Unique identifier for the module (e.g. "NullgateHUD")
     @param moduleData table: Module configuration table
            {
                name    = string (Display title for the sidebar),
@@ -38,17 +38,17 @@ local DB_DEFAULTS = {
 -------------------------------------------------------------------------------]]
 function BAC:RegisterModule(moduleID, moduleData)
     if not moduleID or type(moduleID) ~= "string" or moduleID == "" then
-        DEFAULT_CHAT_FRAME:AddMessage("|cFFFFD100[Bleakfiber's Addon Config]|r Error: Invalid moduleID provided.")
+        DEFAULT_CHAT_FRAME:AddMessage("|cFFFFD100[Nullgate's Addon Config]|r Error: Invalid moduleID provided.")
         return false
     end
 
     if type(moduleData) ~= "table" then
-        DEFAULT_CHAT_FRAME:AddMessage(string.format("|cFFFFD100[Bleakfiber's Addon Config]|r Error: Module '%s' data must be a table.", moduleID))
+        DEFAULT_CHAT_FRAME:AddMessage(string.format("|cFFFFD100[Nullgate's Addon Config]|r Error: Module '%s' data must be a table.", moduleID))
         return false
     end
 
     if type(moduleData.buildUI) ~= "function" then
-        DEFAULT_CHAT_FRAME:AddMessage(string.format("|cFFFFD100[Bleakfiber's Addon Config]|r Error: Module '%s' must supply a 'buildUI' function.", moduleID))
+        DEFAULT_CHAT_FRAME:AddMessage(string.format("|cFFFFD100[Nullgate's Addon Config]|r Error: Module '%s' must supply a 'buildUI' function.", moduleID))
         return false
     end
 
@@ -56,15 +56,15 @@ function BAC:RegisterModule(moduleID, moduleData)
     moduleData.name = moduleData.name or moduleID
     moduleData.id = moduleID
 
-    -- Determine creator category (Bleakfiber vs other creator)
-    if moduleData.isBleakfiber == nil then
+    -- Determine creator category (Nullgate vs other creator)
+    if moduleData.isNullgate == nil then
         if moduleData.author then
             local authLower = moduleData.author:lower()
-            moduleData.isBleakfiber = (authLower:find("bleakfiber") ~= nil or authLower:find("bleak") ~= nil)
+            moduleData.isNullgate = authLower:find("nullgate") ~= nil
         else
             local idLower = moduleID:lower()
             local nameLower = moduleData.name:lower()
-            moduleData.isBleakfiber = (idLower:find("bleak") ~= nil or nameLower:find("bleak") ~= nil)
+            moduleData.isNullgate = (idLower:find("nullgate") ~= nil or nameLower:find("nullgate") ~= nil)
         end
     end
 
@@ -75,10 +75,10 @@ function BAC:RegisterModule(moduleID, moduleData)
         moduleData.isMoversUnlocked = moduleData.isMoversUnlocked or moduleData.movers.IsUnlocked or moduleData.movers.isUnlocked
     end
 
-    -- Automatically sync into _G.Bleakfibers_MoversRegistry if movers are supported
+    -- Automatically sync into _G.Nullgates_MoversRegistry if movers are supported
     if moduleData.toggleMovers then
-        _G.Bleakfibers_MoversRegistry = _G.Bleakfibers_MoversRegistry or {}
-        _G.Bleakfibers_MoversRegistry[moduleID] = {
+        _G.Nullgates_MoversRegistry = _G.Nullgates_MoversRegistry or {}
+        _G.Nullgates_MoversRegistry[moduleID] = {
             name = moduleData.name,
             sidebarName = moduleData.sidebarName,
             Toggle = moduleData.toggleMovers,
@@ -91,18 +91,18 @@ function BAC:RegisterModule(moduleID, moduleData)
     if moduleData.profiles and type(moduleData.profiles.List) == "function" then
         local ok, pList = pcall(moduleData.profiles.List)
         if ok and type(pList) == "table" then
-            if not BleakfibersConfigDB then BleakfibersConfigDB = {} end
-            if not BleakfibersConfigDB.profiles then BleakfibersConfigDB.profiles = { ["Default"] = true } end
+            if not NullgatesConfigDB then NullgatesConfigDB = {} end
+            if not NullgatesConfigDB.profiles then NullgatesConfigDB.profiles = { ["Default"] = true } end
             for _, pName in ipairs(pList) do
                 if type(pName) == "string" and pName ~= "" then
-                    BleakfibersConfigDB.profiles[pName] = true
+                    NullgatesConfigDB.profiles[pName] = true
                 end
             end
         end
     end
 
     -- Sync active master profile to the newly registered module if supported
-    local activeProf = (BleakfibersConfigDB and BleakfibersConfigDB.activeProfile) or "Default"
+    local activeProf = (NullgatesConfigDB and NullgatesConfigDB.activeProfile) or "Default"
     if moduleData.profiles and type(moduleData.profiles.SetCurrent) == "function" then
         pcall(moduleData.profiles.SetCurrent, activeProf)
     elseif moduleData.setProfile and type(moduleData.setProfile) == "function" then
@@ -123,7 +123,7 @@ function BAC:RegisterModule(moduleID, moduleData)
 
     -- If UI is currently open and this module was the last opened tab, or none selected, re-evaluate selection
     if self.frame and self.frame:IsShown() and not self.selectedModuleID then
-        if BleakfibersConfigDB and BleakfibersConfigDB.lastTab == moduleID then
+        if NullgatesConfigDB and NullgatesConfigDB.lastTab == moduleID then
             self:SelectModule(moduleID)
         end
     end
@@ -146,20 +146,20 @@ function BAC:GetModuleOrder()
     return self.moduleOrder
 end
 
-function BAC:IsBleakfiberModule(moduleID)
+function BAC:IsNullgateModule(moduleID)
     local mod = self.modules[moduleID]
-    return mod and (mod.isBleakfiber == true) or false
+    return mod and (mod.isNullgate == true) or false
 end
 
 function BAC:GetSortedModuleList()
-    local bleakfiberList = {}
+    local nullgateList = {}
     local otherList = {}
 
     for _, id in ipairs(self.moduleOrder) do
         local mod = self.modules[id]
         if mod then
-            if mod.isBleakfiber then
-                table.insert(bleakfiberList, id)
+            if mod.isNullgate then
+                table.insert(nullgateList, id)
             else
                 table.insert(otherList, id)
             end
@@ -174,24 +174,24 @@ function BAC:GetSortedModuleList()
         return nameA:lower() < nameB:lower()
     end
 
-    table.sort(bleakfiberList, SortByName)
+    table.sort(nullgateList, SortByName)
     table.sort(otherList, SortByName)
 
     local sorted = {}
-    for _, id in ipairs(bleakfiberList) do
+    for _, id in ipairs(nullgateList) do
         table.insert(sorted, id)
     end
     for _, id in ipairs(otherList) do
         table.insert(sorted, id)
     end
 
-    return sorted, bleakfiberList, otherList
+    return sorted, nullgateList, otherList
 end
 
 --[[-----------------------------------------------------------------------------
     Global Cross-Addon Movers System
 -------------------------------------------------------------------------------]]
-_G.Bleakfibers_MoversRegistry = _G.Bleakfibers_MoversRegistry or {}
+_G.Nullgates_MoversRegistry = _G.Nullgates_MoversRegistry or {}
 BAC.moversUnlocked = false
 
 function BAC:AreMoversUnlocked()
@@ -206,8 +206,8 @@ function BAC:AreMoversUnlocked()
     end
 
     -- Check global movers registry
-    if _G.Bleakfibers_MoversRegistry then
-        for _, entry in pairs(_G.Bleakfibers_MoversRegistry) do
+    if _G.Nullgates_MoversRegistry then
+        for _, entry in pairs(_G.Nullgates_MoversRegistry) do
             if entry.IsUnlocked and type(entry.IsUnlocked) == "function" then
                 local ok, unlocked = pcall(entry.IsUnlocked)
                 if ok and unlocked then return true end
@@ -238,9 +238,9 @@ function BAC:ToggleAllMovers(forceState)
         end
     end
 
-    -- 2. Hook into _G.Bleakfibers_MoversRegistry
-    if _G.Bleakfibers_MoversRegistry then
-        for key, entry in pairs(_G.Bleakfibers_MoversRegistry) do
+    -- 2. Hook into _G.Nullgates_MoversRegistry
+    if _G.Nullgates_MoversRegistry then
+        for key, entry in pairs(_G.Nullgates_MoversRegistry) do
             if entry.Toggle and type(entry.Toggle) == "function" then
                 pcall(entry.Toggle, newState)
                 affectedCount = affectedCount + 1
@@ -265,7 +265,7 @@ function BAC:ToggleAllMovers(forceState)
     end
 
     local statusMsg = newState and "|cFF00FF00UNLOCKED|r (drag frames to reposition)" or "|cFFFF2020LOCKED|r"
-    DEFAULT_CHAT_FRAME:AddMessage(string.format("|cFFFFD100[Bleakfiber's Addon Config]|r Movers are now %s.", statusMsg))
+    DEFAULT_CHAT_FRAME:AddMessage(string.format("|cFFFFD100[Nullgate's Addon Config]|r Movers are now %s.", statusMsg))
 
     return newState, affectedCount
 end
@@ -280,8 +280,8 @@ function BAC:ResetAllMovers()
         end
     end
 
-    if _G.Bleakfibers_MoversRegistry then
-        for key, entry in pairs(_G.Bleakfibers_MoversRegistry) do
+    if _G.Nullgates_MoversRegistry then
+        for key, entry in pairs(_G.Nullgates_MoversRegistry) do
             if entry.Reset and type(entry.Reset) == "function" then
                 pcall(entry.Reset)
                 resetCount = resetCount + 1
@@ -289,7 +289,7 @@ function BAC:ResetAllMovers()
         end
     end
 
-    DEFAULT_CHAT_FRAME:AddMessage("|cFFFFD100[Bleakfiber's Addon Config]|r All addon movers reset to default positions.")
+    DEFAULT_CHAT_FRAME:AddMessage("|cFFFFD100[Nullgate's Addon Config]|r All addon movers reset to default positions.")
     return resetCount
 end
 
@@ -297,13 +297,13 @@ end
     Master Profile Synchronization API
 -------------------------------------------------------------------------------]]
 function BAC:GetActiveProfile()
-    return (BleakfibersConfigDB and BleakfibersConfigDB.activeProfile) or "Default"
+    return (NullgatesConfigDB and NullgatesConfigDB.activeProfile) or "Default"
 end
 
 function BAC:GetProfiles()
     local profileMap = {}
-    if BleakfibersConfigDB and BleakfibersConfigDB.profiles then
-        for profileName in pairs(BleakfibersConfigDB.profiles) do
+    if NullgatesConfigDB and NullgatesConfigDB.profiles then
+        for profileName in pairs(NullgatesConfigDB.profiles) do
             profileMap[profileName] = true
         end
     end
@@ -316,8 +316,8 @@ function BAC:GetProfiles()
                 for _, pName in ipairs(pList) do
                     if type(pName) == "string" and pName ~= "" then
                         profileMap[pName] = true
-                        if BleakfibersConfigDB and BleakfibersConfigDB.profiles then
-                            BleakfibersConfigDB.profiles[pName] = true
+                        if NullgatesConfigDB and NullgatesConfigDB.profiles then
+                            NullgatesConfigDB.profiles[pName] = true
                         end
                     end
                 end
@@ -339,11 +339,11 @@ end
 function BAC:SetActiveProfile(profileKey)
     if not profileKey or type(profileKey) ~= "string" or profileKey == "" then return end
 
-    if not BleakfibersConfigDB then BleakfibersConfigDB = {} end
-    if not BleakfibersConfigDB.profiles then BleakfibersConfigDB.profiles = { ["Default"] = true } end
+    if not NullgatesConfigDB then NullgatesConfigDB = {} end
+    if not NullgatesConfigDB.profiles then NullgatesConfigDB.profiles = { ["Default"] = true } end
 
-    BleakfibersConfigDB.profiles[profileKey] = true
-    BleakfibersConfigDB.activeProfile = profileKey
+    NullgatesConfigDB.profiles[profileKey] = true
+    NullgatesConfigDB.activeProfile = profileKey
 
     local syncedCount = 0
 
@@ -370,17 +370,17 @@ function BAC:SetActiveProfile(profileKey)
         self:UpdateProfileUI()
     end
 
-    DEFAULT_CHAT_FRAME:AddMessage(string.format("|cFFFFD100[Bleakfiber's Addon Config]|r Active profile set to '|cFF00FF00%s|r' (%d addons synced).", profileKey, syncedCount))
+    DEFAULT_CHAT_FRAME:AddMessage(string.format("|cFFFFD100[Nullgate's Addon Config]|r Active profile set to '|cFF00FF00%s|r' (%d addons synced).", profileKey, syncedCount))
 end
 
 function BAC:CreateProfile(profileKey)
     if not profileKey or type(profileKey) ~= "string" or profileKey == "" then return end
 
     local fromProf = self:GetActiveProfile()
-    if not BleakfibersConfigDB then BleakfibersConfigDB = {} end
-    if not BleakfibersConfigDB.profiles then BleakfibersConfigDB.profiles = { ["Default"] = true } end
+    if not NullgatesConfigDB then NullgatesConfigDB = {} end
+    if not NullgatesConfigDB.profiles then NullgatesConfigDB.profiles = { ["Default"] = true } end
 
-    BleakfibersConfigDB.profiles[profileKey] = true
+    NullgatesConfigDB.profiles[profileKey] = true
 
     -- Non-destructive profile creation across all registered modules:
     -- 1. If an individual addon ALREADY has an existing profile with this name, DO NOT OVERWRITE IT. Just activate it.
@@ -423,17 +423,17 @@ function BAC:CreateProfile(profileKey)
     end
 
     self:SetActiveProfile(profileKey)
-    DEFAULT_CHAT_FRAME:AddMessage(string.format("|cFFFFD100[Bleakfiber's Addon Config]|r Created new profile '|cFF00FF00%s|r' (captured current settings).", profileKey))
+    DEFAULT_CHAT_FRAME:AddMessage(string.format("|cFFFFD100[Nullgate's Addon Config]|r Created new profile '|cFF00FF00%s|r' (captured current settings).", profileKey))
 end
 
 function BAC:SaveCurrentAsProfile(profileKey)
     if not profileKey or type(profileKey) ~= "string" or profileKey == "" then return end
 
     local fromProf = self:GetActiveProfile()
-    if not BleakfibersConfigDB then BleakfibersConfigDB = {} end
-    if not BleakfibersConfigDB.profiles then BleakfibersConfigDB.profiles = { ["Default"] = true } end
+    if not NullgatesConfigDB then NullgatesConfigDB = {} end
+    if not NullgatesConfigDB.profiles then NullgatesConfigDB.profiles = { ["Default"] = true } end
 
-    BleakfibersConfigDB.profiles[profileKey] = true
+    NullgatesConfigDB.profiles[profileKey] = true
 
     -- Broadcast save current / copy to all registered modules
     for id, mod in pairs(self.modules) do
@@ -451,17 +451,17 @@ function BAC:SaveCurrentAsProfile(profileKey)
     end
 
     self:SetActiveProfile(profileKey)
-    DEFAULT_CHAT_FRAME:AddMessage(string.format("|cFFFFD100[Bleakfiber's Addon Config]|r Saved current settings as profile '|cFF00FF00%s|r'.", profileKey))
+    DEFAULT_CHAT_FRAME:AddMessage(string.format("|cFFFFD100[Nullgate's Addon Config]|r Saved current settings as profile '|cFF00FF00%s|r'.", profileKey))
 end
 
 function BAC:DeleteProfile(profileKey)
     if not profileKey or profileKey == "Default" then
-        DEFAULT_CHAT_FRAME:AddMessage("|cFFFFD100[Bleakfiber's Addon Config]|r Cannot delete the Default profile.")
+        DEFAULT_CHAT_FRAME:AddMessage("|cFFFFD100[Nullgate's Addon Config]|r Cannot delete the Default profile.")
         return
     end
 
-    if BleakfibersConfigDB and BleakfibersConfigDB.profiles then
-        BleakfibersConfigDB.profiles[profileKey] = nil
+    if NullgatesConfigDB and NullgatesConfigDB.profiles then
+        NullgatesConfigDB.profiles[profileKey] = nil
     end
 
     -- Notify modules
@@ -471,7 +471,7 @@ function BAC:DeleteProfile(profileKey)
         end
     end
 
-    if BleakfibersConfigDB.activeProfile == profileKey then
+    if NullgatesConfigDB.activeProfile == profileKey then
         self:SetActiveProfile("Default")
     else
         if self.UpdateProfileUI then
@@ -479,7 +479,7 @@ function BAC:DeleteProfile(profileKey)
         end
     end
 
-    DEFAULT_CHAT_FRAME:AddMessage(string.format("|cFFFFD100[Bleakfiber's Addon Config]|r Profile '%s' deleted.", profileKey))
+    DEFAULT_CHAT_FRAME:AddMessage(string.format("|cFFFFD100[Nullgate's Addon Config]|r Profile '%s' deleted.", profileKey))
 end
 
 function BAC:CopyProfile(fromKey, toKey)
@@ -491,7 +491,7 @@ function BAC:CopyProfile(fromKey, toKey)
         end
     end
 
-    DEFAULT_CHAT_FRAME:AddMessage(string.format("|cFFFFD100[Bleakfiber's Addon Config]|r Copied profile '%s' to '%s'.", fromKey, toKey))
+    DEFAULT_CHAT_FRAME:AddMessage(string.format("|cFFFFD100[Nullgate's Addon Config]|r Copied profile '%s' to '%s'.", fromKey, toKey))
 end
 
 function BAC:ResetProfile(profileKey)
@@ -503,7 +503,7 @@ function BAC:ResetProfile(profileKey)
         end
     end
 
-    DEFAULT_CHAT_FRAME:AddMessage(string.format("|cFFFFD100[Bleakfiber's Addon Config]|r Reset profile '%s' to defaults across all addons.", profileKey))
+    DEFAULT_CHAT_FRAME:AddMessage(string.format("|cFFFFD100[Nullgate's Addon Config]|r Reset profile '%s' to defaults across all addons.", profileKey))
 end
 
 --[[-----------------------------------------------------------------------------
@@ -556,15 +556,15 @@ eventFrame:RegisterEvent("PLAYER_LOGIN")
 eventFrame:RegisterEvent("PLAYER_LOGOUT")
 
 eventFrame:SetScript("OnEvent", function(self, event, arg1)
-    if event == "ADDON_LOADED" and arg1 == "BleakfibersAddonConfig-Forever" then
+    if event == "ADDON_LOADED" and arg1 == "NullgatesAddonConfig-Forever" then
         -- Initialize SavedVariables with defaults
-        if type(BleakfibersConfigDB) ~= "table" then
-            BleakfibersConfigDB = {}
+        if type(NullgatesConfigDB) ~= "table" then
+            NullgatesConfigDB = {}
         end
 
         for key, defaultValue in pairs(DB_DEFAULTS) do
-            if BleakfibersConfigDB[key] == nil then
-                BleakfibersConfigDB[key] = defaultValue
+            if NullgatesConfigDB[key] == nil then
+                NullgatesConfigDB[key] = defaultValue
             end
         end
 
@@ -572,7 +572,7 @@ eventFrame:SetScript("OnEvent", function(self, event, arg1)
             BAC:InitializeGameMenuButton()
         end
 
-        DEFAULT_CHAT_FRAME:AddMessage("|cFFFFD100Bleakfiber's Addon Config - Forever|r v" .. BAC.version .. " loaded. Type |cFF00FF00/bac|r or |cFF00FF00/bleakfiber|r to open.")
+        DEFAULT_CHAT_FRAME:AddMessage("|cFFFFD100Nullgate's Addon Config - Forever|r v" .. BAC.version .. " loaded. Type |cFF00FF00/bac|r or |cFF00FF00/nullgate|r to open.")
 
     elseif event == "PLAYER_LOGIN" then
         if BAC.InitializeGameMenuButton then
@@ -581,35 +581,35 @@ eventFrame:SetScript("OnEvent", function(self, event, arg1)
 
     elseif event == "PLAYER_LOGOUT" then
         -- Persist last window state if frame exists
-        if BAC.frame and BleakfibersConfigDB then
+        if BAC.frame and NullgatesConfigDB then
             local point, _, relPoint, xOfs, yOfs = BAC.frame:GetPoint()
             if point then
-                BleakfibersConfigDB.point = point
-                BleakfibersConfigDB.relativePoint = relPoint or point
-                BleakfibersConfigDB.xOfs = math.floor(xOfs + 0.5)
-                BleakfibersConfigDB.yOfs = math.floor(yOfs + 0.5)
+                NullgatesConfigDB.point = point
+                NullgatesConfigDB.relativePoint = relPoint or point
+                NullgatesConfigDB.xOfs = math.floor(xOfs + 0.5)
+                NullgatesConfigDB.yOfs = math.floor(yOfs + 0.5)
             end
-            BleakfibersConfigDB.width = math.floor(BAC.frame:GetWidth() + 0.5)
-            BleakfibersConfigDB.height = math.floor(BAC.frame:GetHeight() + 0.5)
+            NullgatesConfigDB.width = math.floor(BAC.frame:GetWidth() + 0.5)
+            NullgatesConfigDB.height = math.floor(BAC.frame:GetHeight() + 0.5)
             if BAC.selectedModuleID then
-                BleakfibersConfigDB.lastTab = BAC.selectedModuleID
+                NullgatesConfigDB.lastTab = BAC.selectedModuleID
             end
         end
     end
 end)
 
 --[[-----------------------------------------------------------------------------
-    Slash Commands: /bac, /bleakfiber
+    Slash Commands: /nac, /nullgate
 -------------------------------------------------------------------------------]]
-SLASH_BLEAKFIBERSCONFIG1 = "/bac"
-SLASH_BLEAKFIBERSCONFIG2 = "/bleakfiber"
+SLASH_NULLGATESCONFIG1 = "/nac"
+SLASH_NULLGATESCONFIG2 = "/nullgate"
 
-SlashCmdList["BLEAKFIBERSCONFIG"] = function(msg)
+SlashCmdList["NULLGATESCONFIG"] = function(msg)
     msg = msg and string.trim and string.trim(msg:lower()) or (msg and msg:lower() or "")
     if msg == "reset" then
-        if BleakfibersConfigDB then
+        if NullgatesConfigDB then
             for key, val in pairs(DB_DEFAULTS) do
-                BleakfibersConfigDB[key] = val
+                NullgatesConfigDB[key] = val
             end
         end
         if BAC.frame then
@@ -617,7 +617,7 @@ SlashCmdList["BLEAKFIBERSCONFIG"] = function(msg)
             BAC.frame:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
             BAC.frame:SetSize(DB_DEFAULTS.width, DB_DEFAULTS.height)
         end
-        DEFAULT_CHAT_FRAME:AddMessage("|cFFFFD100[Bleakfiber's Addon Config]|r Window position and size have been reset.")
+        DEFAULT_CHAT_FRAME:AddMessage("|cFFFFD100[Nullgate's Addon Config]|r Window position and size have been reset.")
     elseif msg == "move" or msg == "movers" or msg == "unlock" then
         BAC:ToggleAllMovers()
     elseif msg == "lock" then
@@ -638,8 +638,42 @@ SlashCmdList["BLEAKFIBERSCONFIG"] = function(msg)
         if prof and prof ~= "" then BAC:DeleteProfile(prof) end
     elseif msg == "profiles" then
         local list = BAC:GetProfiles()
-        DEFAULT_CHAT_FRAME:AddMessage("|cFFFFD100[Bleakfiber's Addon Config]|r Available Profiles: " .. table.concat(list, ", ") .. " (Active: " .. BAC:GetActiveProfile() .. ")")
+        DEFAULT_CHAT_FRAME:AddMessage("|cFFFFD100[Nullgate's Addon Config]|r Available Profiles: " .. table.concat(list, ", ") .. " (Active: " .. BAC:GetActiveProfile() .. ")")
     else
         BAC:ToggleUI()
     end
+end
+
+-- ---------------------------------------------------------------------------
+-- Pre-rebrand version still installed (e.g. a copied Interface folder) would run twice
+-- ---------------------------------------------------------------------------
+do
+    local OLD_ADDON = "BleakfibersAddonConfig-Forever"
+    local IsAddOnLoaded = (C_AddOns and C_AddOns.IsAddOnLoaded) or IsAddOnLoaded
+    local DisableAddOn = (C_AddOns and C_AddOns.DisableAddOn) or DisableAddOn
+
+    StaticPopupDialogs["NULLGATES_CONFIG_OLD_ADDON"] = {
+        text = "Bleakfiber's Addon Config is now Nullgate's Addon Config, and the old version is still installed. Running both loads it twice. Disable the old one now, then delete the BleakfibersAddonConfig-Forever folder from Interface\\AddOns.",
+        button1 = "Disable and Reload",
+        button2 = CANCEL,
+        OnAccept = function()
+            DisableAddOn(OLD_ADDON)
+            ReloadUI()
+        end,
+        timeout = 0,
+        whileDead = true,
+        hideOnEscape = true,
+        preferredIndex = 3,
+    }
+
+    local guard = CreateFrame("Frame")
+    guard:RegisterEvent("PLAYER_LOGIN")
+    guard:SetScript("OnEvent", function(self)
+        self:UnregisterAllEvents()
+        C_Timer.After(4, function()
+            if IsAddOnLoaded and IsAddOnLoaded(OLD_ADDON) then
+                StaticPopup_Show("NULLGATES_CONFIG_OLD_ADDON")
+            end
+        end)
+    end)
 end

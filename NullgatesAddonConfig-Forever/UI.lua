@@ -1,9 +1,9 @@
 --[[
-    Bleakfiber's Addon Config - Forever
+    Nullgate's Addon Config - Forever
     UI.lua - Master Frame, Navigation Sidebar, Content Pane & Lazy-loaded Modules
 ]]
 
-local BAC = BleakfibersAddonConfigForever
+local BAC = NullgatesAddonConfigForever
 local BACKDROP_TEMPLATE = BackdropTemplateMixin and "BackdropTemplate" or nil
 
 -- Reusable backdrop definitions
@@ -211,7 +211,7 @@ local sharedDropdownCatcher = nil
 local function GetOrCreateSharedDropdownMenu()
     if sharedDropdownMenu then return sharedDropdownMenu end
 
-    sharedDropdownCatcher = CreateFrame("Button", "BleakfibersSharedDropdownCatcher", UIParent)
+    sharedDropdownCatcher = CreateFrame("Button", "NullgatesSharedDropdownCatcher", UIParent)
     sharedDropdownCatcher:SetFrameStrata("FULLSCREEN_DIALOG")
     sharedDropdownCatcher:SetFrameLevel(98)
     sharedDropdownCatcher:SetAllPoints(UIParent)
@@ -221,7 +221,7 @@ local function GetOrCreateSharedDropdownMenu()
         if sharedDropdownMenu then sharedDropdownMenu:Hide() end
     end)
 
-    local menu = CreateFrame("Frame", "BleakfibersSharedDropdownMenu", UIParent, BACKDROP_TEMPLATE)
+    local menu = CreateFrame("Frame", "NullgatesSharedDropdownMenu", UIParent, BACKDROP_TEMPLATE)
     menu:SetFrameStrata("FULLSCREEN_DIALOG")
     menu:SetFrameLevel(99)
     menu:SetClampedToScreen(true)
@@ -238,7 +238,7 @@ local function GetOrCreateSharedDropdownMenu()
         sharedDropdownCatcher:Hide()
     end)
 
-    local scrollFrame = CreateFrame("ScrollFrame", "BleakfibersSharedDropdownScrollFrame", menu, "UIPanelScrollFrameTemplate")
+    local scrollFrame = CreateFrame("ScrollFrame", "NullgatesSharedDropdownScrollFrame", menu, "UIPanelScrollFrameTemplate")
     scrollFrame:SetPoint("TOPLEFT", menu, "TOPLEFT", 4, -4)
     scrollFrame:SetPoint("BOTTOMRIGHT", menu, "BOTTOMRIGHT", -22, 4)
     menu.scrollFrame = scrollFrame
@@ -301,7 +301,7 @@ function BAC.UI:GetAvailableFonts()
     end
     local standardFonts = {
         "Nata Sans Regular", "Nata Sans Bold", "Nata Sans Medium",
-        "BleakUI Regular", "BleakUI Bold",
+        "NullgateUI Regular", "NullgateUI Bold",
         "Friz Quadrata TT", "Arial Narrow", "Skurri", "Morpheus"
     }
     for _, f in ipairs(standardFonts) do
@@ -415,7 +415,7 @@ function BAC.UI:CreateDropdown(parent, name, labelText, items, x, y, width, getF
         local hasScroll = (#curItems > maxVisible)
         menu.scrollChild:SetSize(menuWidth - (hasScroll and 28 or 10), totalContentHeight)
 
-        local scrollBar = _G["BleakfibersSharedDropdownScrollFrameScrollBar"]
+        local scrollBar = _G["NullgatesSharedDropdownScrollFrameScrollBar"]
         if scrollBar then
             if hasScroll then
                 scrollBar:Show()
@@ -645,7 +645,7 @@ end
 --[[-----------------------------------------------------------------------------
     Static Dialogs for Profile Management
 -------------------------------------------------------------------------------]]
-StaticPopupDialogs["BLEAKFIBERS_SAVE_AS_PROFILE"] = {
+StaticPopupDialogs["NULLGATES_SAVE_AS_PROFILE"] = {
     text = "Save current settings as a new profile:\nEnter profile name:",
     button1 = ACCEPT,
     button2 = CANCEL,
@@ -675,7 +675,7 @@ StaticPopupDialogs["BLEAKFIBERS_SAVE_AS_PROFILE"] = {
     preferredIndex = 3,
 }
 
-StaticPopupDialogs["BLEAKFIBERS_NEW_PROFILE"] = {
+StaticPopupDialogs["NULLGATES_NEW_PROFILE"] = {
     text = "Enter a name for the new profile:\n|cFF88FF88(Current settings will be copied to new profile)|r",
     button1 = ACCEPT,
     button2 = CANCEL,
@@ -705,7 +705,7 @@ StaticPopupDialogs["BLEAKFIBERS_NEW_PROFILE"] = {
     preferredIndex = 3,
 }
 
-StaticPopupDialogs["BLEAKFIBERS_DELETE_PROFILE"] = {
+StaticPopupDialogs["NULLGATES_DELETE_PROFILE"] = {
     text = "Are you sure you want to delete profile '%s'?",
     button1 = YES,
     button2 = NO,
@@ -720,7 +720,7 @@ StaticPopupDialogs["BLEAKFIBERS_DELETE_PROFILE"] = {
     preferredIndex = 3,
 }
 
-StaticPopupDialogs["BLEAKFIBERS_RESET_PROFILE"] = {
+StaticPopupDialogs["NULLGATES_RESET_PROFILE"] = {
     text = "Reset all addon settings in profile '%s' to defaults?",
     button1 = YES,
     button2 = NO,
@@ -739,7 +739,7 @@ StaticPopupDialogs["BLEAKFIBERS_RESET_PROFILE"] = {
 function BAC:CreateMasterFrame()
     if self.frame then return self.frame end
 
-    local db = BleakfibersConfigDB or {}
+    local db = NullgatesConfigDB or {}
     local width = db.width or 760
     local height = db.height or 520
     local point = db.point or "CENTER"
@@ -748,7 +748,7 @@ function BAC:CreateMasterFrame()
     local yOfs = db.yOfs or 0
 
     -- Root Master Frame
-    local f = CreateFrame("Frame", "BleakfibersConfigFrame", UIParent, BACKDROP_TEMPLATE)
+    local f = CreateFrame("Frame", "NullgatesConfigFrame", UIParent, BACKDROP_TEMPLATE)
     f:SetSize(width, height)
     f:SetPoint(point, UIParent, relPoint, xOfs, yOfs)
     f:SetFrameStrata("HIGH")
@@ -759,7 +759,7 @@ function BAC:CreateMasterFrame()
     f:SetResizable(true)
 
     -- ESC-to-close behavior
-    tinsert(UISpecialFrames, "BleakfibersConfigFrame")
+    tinsert(UISpecialFrames, "NullgatesConfigFrame")
 
     -- Resize bounds
     if f.SetResizeBounds then
@@ -789,11 +789,11 @@ function BAC:CreateMasterFrame()
     titleBar:SetScript("OnDragStop", function()
         f:StopMovingOrSizing()
         local pt, _, relPt, x, y = f:GetPoint()
-        if BleakfibersConfigDB then
-            BleakfibersConfigDB.point = pt
-            BleakfibersConfigDB.relativePoint = relPt or pt
-            BleakfibersConfigDB.xOfs = math.floor(x + 0.5)
-            BleakfibersConfigDB.yOfs = math.floor(y + 0.5)
+        if NullgatesConfigDB then
+            NullgatesConfigDB.point = pt
+            NullgatesConfigDB.relativePoint = relPt or pt
+            NullgatesConfigDB.xOfs = math.floor(x + 0.5)
+            NullgatesConfigDB.yOfs = math.floor(y + 0.5)
         end
     end)
 
@@ -807,7 +807,7 @@ function BAC:CreateMasterFrame()
     -- Title Text
     local titleText = titleBar:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     titleText:SetPoint("LEFT", titleIcon, "RIGHT", 8, 0)
-    titleText:SetText("|cFFFFD100Bleakfiber's Addon Config|r  |cFF8899A6Forever|r")
+    titleText:SetText("|cFFFFD100Nullgate's Addon Config|r  |cFF8899A6Forever|r")
 
     -- Version Subtitle
     local versionText = titleBar:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
@@ -834,8 +834,8 @@ function BAC:CreateMasterFrame()
         GameTooltip:SetOwner(btn, "ANCHOR_TOP")
         GameTooltip:ClearLines()
         GameTooltip:AddLine("Global UI Movers", COLORS.goldText[1], COLORS.goldText[2], COLORS.goldText[3])
-        GameTooltip:AddLine("Unlock or lock all moveable UI frames across all Bleakfiber addons.", 1, 1, 1, true)
-        GameTooltip:AddLine("|cFF8899A6Command: /bac movers|r", 0.7, 0.7, 0.7)
+        GameTooltip:AddLine("Unlock or lock all moveable UI frames across all Nullgate addons.", 1, 1, 1, true)
+        GameTooltip:AddLine("|cFF8899A6Command: /nac movers|r", 0.7, 0.7, 0.7)
         GameTooltip:Show()
     end)
     globalMoverBtn:SetScript("OnLeave", function(btn)
@@ -866,7 +866,7 @@ function BAC:CreateMasterFrame()
         GameTooltip:ClearLines()
         GameTooltip:AddLine("Reset All Movers", COLORS.goldText[1], COLORS.goldText[2], COLORS.goldText[3])
         GameTooltip:AddLine("Reset all moveable UI frames across all addons to default positions.", 1, 1, 1, true)
-        GameTooltip:AddLine("|cFF8899A6Command: /bac resetmovers|r", 0.7, 0.7, 0.7)
+        GameTooltip:AddLine("|cFF8899A6Command: /nac resetmovers|r", 0.7, 0.7, 0.7)
         GameTooltip:Show()
     end)
     globalResetBtn:SetScript("OnLeave", function(btn)
@@ -880,10 +880,10 @@ function BAC:CreateMasterFrame()
     f.globalResetBtn = globalResetBtn
 
     -- Master Profile Dropdown & Button (in Title Bar near Movers)
-    local profileDropdownFrame = CreateFrame("Frame", "BleakfibersProfileDropDown", UIParent, "UIDropDownMenuTemplate")
+    local profileDropdownFrame = CreateFrame("Frame", "NullgatesProfileDropDown", UIParent, "UIDropDownMenuTemplate")
     f.profileDropdownFrame = profileDropdownFrame
 
-    local profileBtn = CreateFrame("Button", "BleakfibersMasterProfileBtn", titleBar, BACKDROP_TEMPLATE)
+    local profileBtn = CreateFrame("Button", "NullgatesMasterProfileBtn", titleBar, BACKDROP_TEMPLATE)
     profileBtn:SetSize(130, 22)
     profileBtn:SetPoint("RIGHT", globalResetBtn, "LEFT", -6, 0)
     profileBtn:SetBackdrop(INSET_BACKDROP)
@@ -906,8 +906,8 @@ function BAC:CreateMasterFrame()
         GameTooltip:ClearLines()
         GameTooltip:AddLine("Master Profile Manager", COLORS.goldText[1], COLORS.goldText[2], COLORS.goldText[3])
         GameTooltip:AddLine("Active: |cFFFFFFFF" .. BAC:GetActiveProfile() .. "|r", 1, 1, 1)
-        GameTooltip:AddLine("Click to switch, create, reset, or delete synchronized profiles across all Bleakfiber addons.", 0.8, 0.8, 0.8, true)
-        GameTooltip:AddLine("|cFF8899A6Command: /bac profile <name>|r", 0.7, 0.7, 0.7)
+        GameTooltip:AddLine("Click to switch, create, reset, or delete synchronized profiles across all Nullgate addons.", 0.8, 0.8, 0.8, true)
+        GameTooltip:AddLine("|cFF8899A6Command: /nac profile <name>|r", 0.7, 0.7, 0.7)
         GameTooltip:Show()
     end)
 
@@ -959,16 +959,16 @@ function BAC:CreateMasterFrame()
     end)
     resizeGrip:SetScript("OnMouseUp", function()
         f:StopMovingOrSizing()
-        if BleakfibersConfigDB then
-            BleakfibersConfigDB.width = math.floor(f:GetWidth() + 0.5)
-            BleakfibersConfigDB.height = math.floor(f:GetHeight() + 0.5)
+        if NullgatesConfigDB then
+            NullgatesConfigDB.width = math.floor(f:GetWidth() + 0.5)
+            NullgatesConfigDB.height = math.floor(f:GetHeight() + 0.5)
         end
     end)
 
     -- Footer hint text
     local footerText = f:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
     footerText:SetPoint("BOTTOMLEFT", f, "BOTTOMLEFT", 12, 8)
-    footerText:SetText("|cFF667788Use /bac or /bleakfiber to toggle this window|r")
+    footerText:SetText("|cFF667788Use /nac or /nullgate to toggle this window|r")
 
     -- Left Sidebar Frame
     local sidebar = CreateFrame("Frame", nil, f, BACKDROP_TEMPLATE)
@@ -981,7 +981,7 @@ function BAC:CreateMasterFrame()
     f.sidebar = sidebar
 
     -- Sidebar Scrollable Frame
-    local sidebarScroll = CreateFrame("ScrollFrame", "BleakfibersSidebarScrollFrame", sidebar, "UIPanelScrollFrameTemplate")
+    local sidebarScroll = CreateFrame("ScrollFrame", "NullgatesSidebarScrollFrame", sidebar, "UIPanelScrollFrameTemplate")
     sidebarScroll:SetPoint("TOPLEFT", sidebar, "TOPLEFT", 6, -8)
     sidebarScroll:SetPoint("BOTTOMRIGHT", sidebar, "BOTTOMRIGHT", -26, 8)
 
@@ -1040,7 +1040,7 @@ function BAC:CreateMasterFrame()
             if mod.refresh and type(mod.refresh) == "function" then
                 local ok, err = pcall(mod.refresh)
                 if not ok then
-                    DEFAULT_CHAT_FRAME:AddMessage("|cFFFF2020[Bleakfiber's Addon Config] Refresh error:|r " .. tostring(err))
+                    DEFAULT_CHAT_FRAME:AddMessage("|cFFFF2020[Nullgate's Addon Config] Refresh error:|r " .. tostring(err))
                 end
             end
         end
@@ -1127,7 +1127,7 @@ function BAC:CreateMasterFrame()
 
     local emptyTitle = emptyState:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
     emptyTitle:SetPoint("TOP", emptyIcon, "BOTTOM", 0, -14)
-    emptyTitle:SetText("|cFFFFD100Bleakfiber's Addon Config|r")
+    emptyTitle:SetText("|cFFFFD100Nullgate's Addon Config|r")
 
     local emptyMessage = emptyState:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
     emptyMessage:SetPoint("TOP", emptyTitle, "BOTTOM", 0, -8)
@@ -1144,7 +1144,7 @@ function BAC:CreateMasterFrame()
         BAC:RefreshSidebar()
         BAC:UpdateMoverButtonState()
         BAC:UpdateProfileUI()
-        local lastTab = BleakfibersConfigDB and BleakfibersConfigDB.lastTab
+        local lastTab = NullgatesConfigDB and NullgatesConfigDB.lastTab
         if lastTab and BAC.modules[lastTab] then
             BAC:SelectModule(lastTab)
         elseif BAC.selectedModuleID and BAC.modules[BAC.selectedModuleID] then
@@ -1181,9 +1181,9 @@ function BAC:RefreshSidebar()
     local currentY = 4
 
     -- Initialize persistent headers and group divider on scrollChild
-    if not scrollChild.headerBleakfiber then
-        scrollChild.headerBleakfiber = scrollChild:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-        scrollChild.headerBleakfiber:SetText("|cFFFFD100BLEAKFIBER'S|r")
+    if not scrollChild.headerNullgate then
+        scrollChild.headerNullgate = scrollChild:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+        scrollChild.headerNullgate:SetText("|cFFFFD100NULLGATE'S|r")
     end
 
     if not scrollChild.groupDivider then
@@ -1198,7 +1198,7 @@ function BAC:RefreshSidebar()
     end
 
     -- Hide headers and divider initially
-    scrollChild.headerBleakfiber:Hide()
+    scrollChild.headerNullgate:Hide()
     scrollChild.groupDivider:Hide()
     scrollChild.headerOther:Hide()
 
@@ -1207,12 +1207,12 @@ function BAC:RefreshSidebar()
         btn:Hide()
     end
 
-    -- Retrieve sorted lists (Bleakfiber addons prioritized on top, each group alphabetical)
-    local sortedAll, bleakfiberModules, otherModules = self:GetSortedModuleList()
+    -- Retrieve sorted lists (Nullgate addons prioritized on top, each group alphabetical)
+    local sortedAll, nullgateModules, otherModules = self:GetSortedModuleList()
     self.sortedModules = sortedAll
 
     -- Helper to lay out a list of module buttons
-    local function LayoutModuleGroup(moduleIDs, isBleakGroup)
+    local function LayoutModuleGroup(moduleIDs, isNullgateGroup)
         for _, moduleID in ipairs(moduleIDs) do
             local moduleData = self.modules[moduleID]
             local btn = self.tabButtons[moduleID]
@@ -1274,9 +1274,9 @@ function BAC:RefreshSidebar()
             btn:SetPoint("TOPLEFT", scrollChild, "TOPLEFT", 0, -currentY)
             btn:SetPoint("TOPRIGHT", scrollChild, "TOPRIGHT", 0, -currentY)
 
-            -- Format button label: If in Bleakfiber group, strip redundant prefix if desired
+            -- Format button label: If in Nullgate group, strip redundant prefix if desired
             local displayLabel = moduleData.sidebarName or moduleData.name or moduleID
-            if isBleakGroup and not moduleData.sidebarName then
+            if isNullgateGroup and not moduleData.sidebarName then
                 displayLabel = displayLabel:gsub("^[Bb]leakfiber'?s?%s+", "")
                 displayLabel = displayLabel:gsub("^[Bb]leak%s+", "")
             end
@@ -1288,19 +1288,19 @@ function BAC:RefreshSidebar()
         end
     end
 
-    -- 1. Bleakfiber's Section
-    if #bleakfiberModules > 0 then
-        scrollChild.headerBleakfiber:ClearAllPoints()
-        scrollChild.headerBleakfiber:SetPoint("TOPLEFT", scrollChild, "TOPLEFT", 6, -currentY)
-        scrollChild.headerBleakfiber:Show()
+    -- 1. Nullgate's Section
+    if #nullgateModules > 0 then
+        scrollChild.headerNullgate:ClearAllPoints()
+        scrollChild.headerNullgate:SetPoint("TOPLEFT", scrollChild, "TOPLEFT", 6, -currentY)
+        scrollChild.headerNullgate:Show()
         currentY = currentY + 18
 
-        LayoutModuleGroup(bleakfiberModules, true)
+        LayoutModuleGroup(nullgateModules, true)
     end
 
     -- 2. Other Creators' Section
     if #otherModules > 0 then
-        if #bleakfiberModules > 0 then
+        if #nullgateModules > 0 then
             currentY = currentY + 4
             scrollChild.groupDivider:ClearAllPoints()
             scrollChild.groupDivider:SetPoint("TOPLEFT", scrollChild, "TOPLEFT", 4, -currentY)
@@ -1392,8 +1392,8 @@ function BAC:SelectModule(moduleID)
 
     self.selectedModuleID = moduleID
 
-    if BleakfibersConfigDB then
-        BleakfibersConfigDB.lastTab = moduleID
+    if NullgatesConfigDB then
+        NullgatesConfigDB.lastTab = moduleID
     end
 
     -- Hide empty state and show header divider
@@ -1437,7 +1437,7 @@ function BAC:SelectModule(moduleID)
     -- Lazy loading: build UI only once when first visited
     local activeContainer = self.moduleContainers[moduleID]
     if not activeContainer then
-        activeContainer = CreateFrame("Frame", "BleakfibersContainer_" .. moduleID, self.frame.contentArea)
+        activeContainer = CreateFrame("Frame", "NullgatesContainer_" .. moduleID, self.frame.contentArea)
         activeContainer:SetAllPoints(self.frame.contentArea)
         activeContainer.isMasterHub = true
 
@@ -1470,7 +1470,7 @@ end
 function BAC:EnsureMoverControlFrame()
     if self.moverControlFrame then return self.moverControlFrame end
 
-    local ctrl = CreateFrame("Frame", "BleakfibersAddonConfig_MoverControlFrame", UIParent, BACKDROP_TEMPLATE)
+    local ctrl = CreateFrame("Frame", "NullgatesAddonConfig_MoverControlFrame", UIParent, BACKDROP_TEMPLATE)
     ctrl:SetSize(280, 52)
     ctrl:SetPoint("TOP", UIParent, "TOP", 0, -24)
     ctrl:SetFrameStrata("DIALOG")
@@ -1602,7 +1602,7 @@ end
 function BAC:GetOrCreateProfileMenu()
     if self.profileMenuFrame then return self.profileMenuFrame end
 
-    local menuFrame = CreateFrame("Frame", "BleakfibersProfileMenuFrame", UIParent, BACKDROP_TEMPLATE)
+    local menuFrame = CreateFrame("Frame", "NullgatesProfileMenuFrame", UIParent, BACKDROP_TEMPLATE)
     menuFrame:SetFrameStrata("FULLSCREEN_DIALOG")
     menuFrame:SetClampedToScreen(true)
     menuFrame:SetBackdrop(INSET_BACKDROP)
@@ -1636,7 +1636,7 @@ function BAC:GetOrCreateProfileMenu()
 end
 
 function BAC:ToggleProfileMenu(anchorBtn)
-    anchorBtn = anchorBtn or (self.frame and self.frame.profileBtn) or _G["BleakfibersMasterProfileBtn"]
+    anchorBtn = anchorBtn or (self.frame and self.frame.profileBtn) or _G["NullgatesMasterProfileBtn"]
     if not anchorBtn then return end
 
     local menu = self:GetOrCreateProfileMenu()
@@ -1751,7 +1751,7 @@ function BAC:ToggleProfileMenu(anchorBtn)
     saveCurrentBtn:SetBackdropBorderColor(unpack(COLORS.goldMuted))
     saveCurrentBtn:SetScript("OnClick", function()
         menu:Hide()
-        StaticPopup_Show("BLEAKFIBERS_SAVE_AS_PROFILE")
+        StaticPopup_Show("NULLGATES_SAVE_AS_PROFILE")
     end)
     saveCurrentBtn:Show()
     currentY = currentY - btnHeight - 2
@@ -1767,7 +1767,7 @@ function BAC:ToggleProfileMenu(anchorBtn)
     newBtn:SetBackdropBorderColor(unpack(COLORS.goldMuted))
     newBtn:SetScript("OnClick", function()
         menu:Hide()
-        StaticPopup_Show("BLEAKFIBERS_NEW_PROFILE")
+        StaticPopup_Show("NULLGATES_NEW_PROFILE")
     end)
     newBtn:Show()
     currentY = currentY - btnHeight - 2
@@ -1784,7 +1784,7 @@ function BAC:ToggleProfileMenu(anchorBtn)
     resetBtn:SetScript("OnClick", function()
         menu:Hide()
         local cur = BAC:GetActiveProfile()
-        local dialog = StaticPopup_Show("BLEAKFIBERS_RESET_PROFILE", cur)
+        local dialog = StaticPopup_Show("NULLGATES_RESET_PROFILE", cur)
         if dialog then dialog.data = cur end
     end)
     resetBtn:Show()
@@ -1803,7 +1803,7 @@ function BAC:ToggleProfileMenu(anchorBtn)
         delBtn:SetScript("OnClick", function()
             menu:Hide()
             local cur = BAC:GetActiveProfile()
-            local dialog = StaticPopup_Show("BLEAKFIBERS_DELETE_PROFILE", cur)
+            local dialog = StaticPopup_Show("NULLGATES_DELETE_PROFILE", cur)
             if dialog then dialog.data = cur end
         end)
         delBtn:Show()
@@ -1818,7 +1818,7 @@ function BAC:ToggleProfileMenu(anchorBtn)
 end
 
 function BAC:UpdateProfileUI()
-    local btn = (self.frame and self.frame.profileBtn) or _G["BleakfibersMasterProfileBtn"]
+    local btn = (self.frame and self.frame.profileBtn) or _G["NullgatesMasterProfileBtn"]
     if btn and btn.title then
         btn.title:SetText("Profile: " .. self:GetActiveProfile())
     end
@@ -1826,7 +1826,7 @@ end
 
 --[[-----------------------------------------------------------------------------
     Escape Game Menu Integration
-    Adds a Bleakfiber's Config button below Macros and above Logout (disabled in combat)
+    Adds a Nullgate's Config button below Macros and above Logout (disabled in combat)
 -------------------------------------------------------------------------------]]
 local gameMenuButton = nil
 
@@ -1909,7 +1909,7 @@ local function PositionGameMenuButton(isFromLayout)
         gameMenuButton:SetSize(btnW, btnH)
     end
 
-    -- Anchor Bleakfiber button tightly below Macros (1px spacing)
+    -- Anchor Nullgate button tightly below Macros (1px spacing)
     local buttonSpacing = 1
     gameMenuButton:ClearAllPoints()
     gameMenuButton:SetPoint("TOP", macroBtn, "BOTTOM", 0, -buttonSpacing)
@@ -1962,22 +1962,22 @@ function BAC:InitializeGameMenuButton()
     local btn = nil
     local templates = { "GameMenuButtonTemplate", "MainMenuFrameButtonTemplate", "UIPanelButtonTemplate" }
     for _, tmpl in ipairs(templates) do
-        local ok, frame = pcall(CreateFrame, "Button", "Bleakfibers_GameMenuButton", GameMenuFrame, tmpl)
+        local ok, frame = pcall(CreateFrame, "Button", "Nullgates_GameMenuButton", GameMenuFrame, tmpl)
         if ok and frame and frame.SetText then
             btn = frame
             break
         end
     end
     if not btn then
-        btn = CreateFrame("Button", "Bleakfibers_GameMenuButton", GameMenuFrame)
+        btn = CreateFrame("Button", "Nullgates_GameMenuButton", GameMenuFrame)
     end
 
     btn:SetSize(200, 22)
-    btn:SetText("|cFFFFD100Bleakfiber's|r Config")
+    btn:SetText("|cFFFFD100Nullgate's|r Config")
 
     btn:SetScript("OnClick", function()
         if InCombatLockdown() then
-            DEFAULT_CHAT_FRAME:AddMessage("|cFFFF2020[Bleakfiber's Addon Config] Cannot open configuration during combat.|r")
+            DEFAULT_CHAT_FRAME:AddMessage("|cFFFF2020[Nullgate's Addon Config] Cannot open configuration during combat.|r")
             return
         end
         HideUIPanel(GameMenuFrame)
@@ -1986,11 +1986,11 @@ function BAC:InitializeGameMenuButton()
 
     btn:SetScript("OnEnter", function(self)
         GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
-        GameTooltip:AddLine("|cFFFFD100Bleakfiber's Addon Config|r", 1, 1, 1)
+        GameTooltip:AddLine("|cFFFFD100Nullgate's Addon Config|r", 1, 1, 1)
         if InCombatLockdown() then
             GameTooltip:AddLine("Configuration is disabled while in combat.", 1.0, 0.2, 0.2)
         else
-            GameTooltip:AddLine("Open master addon suite settings (/bac).", 0.7, 0.7, 0.7)
+            GameTooltip:AddLine("Open master addon suite settings (/nac).", 0.7, 0.7, 0.7)
         end
         GameTooltip:Show()
     end)

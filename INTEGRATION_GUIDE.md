@@ -1,19 +1,18 @@
-# Bleakfiber's Addon Config - Third-Party Developer Integration Guide
 
-This guide provides everything third-party and community addon developers need to hook their addon configurations, mover systems, and profile handlers into **Bleakfiber's Addon Config - Forever** (Target Interface: `16001` / World of Warcraft Forever).
+This guide provides everything third-party and community addon developers need to hook their addon configurations, mover systems, and profile handlers into **Nullgate's Addon Config - Forever** (Target Interface: `16001` / World of Warcraft Forever).
 
 ---
 
 ## 📑 Table of Contents
 
 - [1. Overview & Architecture](#1-overview--architecture)
-- [2. Why Integrate with Bleakfiber's Addon Config?](#2-why-integrate-with-bleakfibers-addon-config)
+- [2. Why Integrate with Nullgate's Addon Config?](#2-why-integrate-with-nullgates-addon-config)
 - [3. Soft-Linking Pattern (Zero Mandatory Dependencies)](#3-soft-linking-pattern-zero-mandatory-dependencies)
 - [4. The Core Public API: `BAC:RegisterModule`](#4-the-core-public-api-bacregistermodule)
 - [5. Building Your Options UI (`buildUI`)](#5-building-your-options-ui-buildui)
   - [Approach A: Using the Shared `BAC.UI` Toolkit (Recommended)](#approach-a-using-the-shared-bacui-toolkit-recommended)
   - [Approach B: Embedding an Existing AceGUI / Custom Frame](#approach-b-embedding-an-existing-acegui--custom-frame)
-- [6. Integrating with Master Movers (`/bac mover`)](#6-integrating-with-master-movers-bac-mover)
+- [6. Integrating with Master Movers (`/nac mover`)](#6-integrating-with-master-movers-bac-mover)
 - [7. Integrating with Cross-Addon Profile Sync](#7-integrating-with-cross-addon-profile-sync)
 - [8. Slash Command Redirection](#8-slash-command-redirection)
 - [9. Complete Copy-Pasteable Boilerplate Examples](#9-complete-copy-pasteable-boilerplate-examples)
@@ -24,30 +23,30 @@ This guide provides everything third-party and community addon developers need t
 
 ## 1. Overview & Architecture
 
-**Bleakfiber's Addon Config** (`BleakfibersAddonConfig-Forever` / `BAC`) is a centralized configuration manager and UI orchestrator for World of Warcraft.
+**Nullgate's Addon Config** (`NullgatesAddonConfig-Forever` / `BAC`) is a centralized configuration manager and UI orchestrator for World of Warcraft.
 
 Key capabilities available to registered addons:
-- **Escape Game Menu Integration**: Adds a stylized `Bleakfiber's Config` button directly inside the native Blizzard Game Menu (`GameMenuFrame`) below Macros/Options with built-in combat lockdown protection.
-- **Categorized Sidebar Navigation**: Automatically categorizes official suite modules under `BLEAKFIBER'S` and community modules under `OTHER ADDONS`.
-- **Unified Master Movers**: Coordinates frame dragging and repositioning across all installed addons simultaneously (`/bac mover`), while hiding redundant individual addon mover modes.
+- **Escape Game Menu Integration**: Adds a stylized `Nullgate's Config` button directly inside the native Blizzard Game Menu (`GameMenuFrame`) below Macros/Options with built-in combat lockdown protection.
+- **Categorized Sidebar Navigation**: Automatically categorizes official suite modules under `NULLGATE'S` and community modules under `OTHER ADDONS`.
+- **Unified Master Movers**: Coordinates frame dragging and repositioning across all installed addons simultaneously (`/nac mover`), while hiding redundant individual addon mover modes.
 - **Synchronized, Non-Destructive Profiles**: Automatically synchronizes profile switching across all registered addons in lockstep without overwriting or wiping existing user configurations.
 - **Shared Widget Toolkit (`BAC.UI`)**: Full suite of pre-styled Dark Slate & Gold UI widgets (checkboxes, sliders, dropdowns, color pickers, editboxes, and smart auto-hiding scrollbars).
 
 ---
 
-## 2. Why Integrate with Bleakfiber's Addon Config?
+## 2. Why Integrate with Nullgate's Addon Config?
 
 1. **Effortless Discovery**: Players can open your configuration directly from the Escape menu without having to remember custom slash commands.
 2. **Zero UI Boilerplate**: You don't need to build movable standalone frames, title bars, close buttons, or backdrop textures—BAC handles the window shell.
 3. **Consistent Visual Polish**: Consume the `BAC.UI` toolkit to get professional Dark Slate & Gold styling matching the modern UI standard.
-4. **Coordinated On-Screen Layout**: Players can align all their UI elements at once using `/bac mover`.
+4. **Coordinated On-Screen Layout**: Players can align all their UI elements at once using `/nac mover`.
 5. **Completely Optional (Soft Dependency)**: Your addon can remain 100% standalone and operational if BAC is not installed.
 
 ---
 
 ## 3. Soft-Linking Pattern (Zero Mandatory Dependencies)
 
-**Never list `BleakfibersAddonConfig-Forever` as a `## Dependencies:` in your `.toc`.** 
+**Never list `NullgatesAddonConfig-Forever` as a `## Dependencies:` in your `.toc`.** 
 
 Instead, declare it under `## OptionalDeps:` so your addon loads normally whether BAC is installed or not:
 
@@ -58,7 +57,7 @@ Instead, declare it under `## OptionalDeps:` so your addon loads normally whethe
 ## Author: YourName
 ## Version: 1.0.0
 ## SavedVariables: MyAwesomeAddonDB
-## OptionalDeps: BleakfibersAddonConfig-Forever
+## OptionalDeps: NullgatesAddonConfig-Forever
 ```
 
 In your Lua code, listen for either your addon or BAC loading:
@@ -67,8 +66,8 @@ In your Lua code, listen for either your addon or BAC loading:
 local eventFrame = CreateFrame("Frame")
 eventFrame:RegisterEvent("ADDON_LOADED")
 eventFrame:SetScript("OnEvent", function(self, event, addonName)
-    if addonName == "MyAwesomeAddon" or addonName == "BleakfibersAddonConfig-Forever" then
-        if BleakfibersAddonConfigForever and BleakfibersAddonConfigForever.RegisterModule then
+    if addonName == "MyAwesomeAddon" or addonName == "NullgatesAddonConfig-Forever" then
+        if NullgatesAddonConfigForever and NullgatesAddonConfigForever.RegisterModule then
             -- Hook into BAC
             RegisterWithBAC()
         end
@@ -80,11 +79,11 @@ end)
 
 ## 4. The Core Public API: `BAC:RegisterModule`
 
-To register your addon, call `BleakfibersAddonConfigForever:RegisterModule(moduleID, moduleData)`.
+To register your addon, call `NullgatesAddonConfigForever:RegisterModule(moduleID, moduleData)`.
 
 ### Method Signature
 ```lua
-BleakfibersAddonConfigForever:RegisterModule(moduleID, moduleData)
+NullgatesAddonConfigForever:RegisterModule(moduleID, moduleData)
 ```
 
 ### Parameters
@@ -94,8 +93,8 @@ BleakfibersAddonConfigForever:RegisterModule(moduleID, moduleData)
 | `moduleID` | `string` | **Yes** | Unique identifier for your module (e.g., `"MyAddon"`). |
 | `name` | `string` | No | Full display title shown in the content header (defaults to `moduleID`). |
 | `sidebarName` | `string` | No | Short name displayed on the left sidebar tab button (defaults to `name`). |
-| `author` | `string` | No | Addon author. If not `"Bleakfiber"`, your module is automatically filed under the styled **OTHER ADDONS** sidebar group. |
-| `isBleakfiber` | `boolean` | No | Explicit flag. Set to `false` for community/third-party addons. |
+| `author` | `string` | No | Addon author. If not `"Nullgate"`, your module is automatically filed under the styled **OTHER ADDONS** sidebar group. |
+| `isNullgate` | `boolean` | No | Explicit flag. Set to `false` for community/third-party addons. |
 | `description` | `string` | No | Optional subtitle or tooltip summary. |
 | `db` | `table` | No | Direct reference to your addon's `SavedVariables` table. |
 | `buildUI` | `function(container, isMasterHub)` | **Yes** | Callback that creates and anchors your UI controls inside `container`. |
@@ -118,10 +117,10 @@ When the user clicks your tab in the BAC sidebar, BAC creates a clean content co
 
 ### Approach A: Using the Shared `BAC.UI` Toolkit (Recommended)
 
-When BAC is loaded, `BleakfibersAddonConfigForever.UI` (`BAC.UI`) exports ready-to-use widget factory methods:
+When BAC is loaded, `NullgatesAddonConfigForever.UI` (`BAC.UI`) exports ready-to-use widget factory methods:
 
 ```lua
-local BAC = BleakfibersAddonConfigForever
+local BAC = NullgatesAddonConfigForever
 
 local function BuildMyUI(container, isMasterHub)
     local Kit = BAC.UI
@@ -208,9 +207,9 @@ end
 
 ---
 
-## 6. Integrating with Master Movers (`/bac mover`)
+## 6. Integrating with Master Movers (`/nac mover`)
 
-When players use **Bleakfiber's Addon Config**, they love the ability to unlock all on-screen frames simultaneously with `/bac mover` or by clicking the "Movers" button in the content header.
+When players use **Nullgate's Addon Config**, they love the ability to unlock all on-screen frames simultaneously with `/nac mover` or by clicking the "Movers" button in the content header.
 
 To participate in master movers, provide:
 1. `toggleMovers(state)`: Function that receives boolean `true` (unlock/show movers) or `false` (lock/hide movers).
@@ -327,13 +326,13 @@ SlashCmdList["MYADDON"] = function(msg)
 
     if msg == "mover" then
         MyAddon:ToggleMovers()
-    elseif BleakfibersAddonConfigForever and BleakfibersAddonConfigForever.SelectModule then
+    elseif NullgatesAddonConfigForever and NullgatesAddonConfigForever.SelectModule then
         -- Open BAC and navigate straight to your addon tab!
-        BleakfibersAddonConfigForever:ShowUI()
-        BleakfibersAddonConfigForever:SelectModule("MyAddon")
+        NullgatesAddonConfigForever:ShowUI()
+        NullgatesAddonConfigForever:SelectModule("MyAddon")
     else
         -- Fallback if BAC is not installed: print help or open your own window
-        DEFAULT_CHAT_FRAME:AddMessage("|cFFFFD100[MyAddon]|r Install Bleakfiber's Addon Config for graphical settings.")
+        DEFAULT_CHAT_FRAME:AddMessage("|cFFFFD100[MyAddon]|r Install Nullgate's Addon Config for graphical settings.")
     end
 end
 ```
@@ -351,21 +350,21 @@ local ADDON_NAME = "SimpleClock"
 local DISPLAY_TITLE = "Simple Clock"
 
 local function InitBAC()
-    if not (BleakfibersAddonConfigForever and BleakfibersAddonConfigForever.RegisterModule) then
+    if not (NullgatesAddonConfigForever and NullgatesAddonConfigForever.RegisterModule) then
         return
     end
 
-    BleakfibersAddonConfigForever:RegisterModule(ADDON_NAME, {
+    NullgatesAddonConfigForever:RegisterModule(ADDON_NAME, {
         name = DISPLAY_TITLE,
         sidebarName = DISPLAY_TITLE,
         author = "CommunityAuthor",
-        isBleakfiber = false, -- Lands cleanly under "OTHER ADDONS"
+        isNullgate = false, -- Lands cleanly under "OTHER ADDONS"
         description = "Lightweight on-screen digital clock.",
         db = SimpleClockDB,
 
         -- 1. Build the GUI using shared Dark Slate & Gold widgets
         buildUI = function(container, isMasterHub)
-            local Kit = BleakfibersAddonConfigForever.UI
+            local Kit = NullgatesAddonConfigForever.UI
 
             Kit:CreateSectionHeader(container, "Clock Display Settings", 16, -16)
 
@@ -398,7 +397,7 @@ end
 local f = CreateFrame("Frame")
 f:RegisterEvent("ADDON_LOADED")
 f:SetScript("OnEvent", function(self, event, name)
-    if name == ADDON_NAME or name == "BleakfibersAddonConfig-Forever" then
+    if name == ADDON_NAME or name == "NullgatesAddonConfig-Forever" then
         InitBAC()
     end
 end)
@@ -415,15 +414,15 @@ local DISPLAY_TITLE = "Ace Tracker"
 local AceConfigDialog = LibStub and LibStub("AceConfigDialog-3.0", true)
 
 local function RegisterAceWithBAC()
-    if not (BleakfibersAddonConfigForever and BleakfibersAddonConfigForever.RegisterModule) then
+    if not (NullgatesAddonConfigForever and NullgatesAddonConfigForever.RegisterModule) then
         return
     end
 
-    BleakfibersAddonConfigForever:RegisterModule(ADDON_NAME, {
+    NullgatesAddonConfigForever:RegisterModule(ADDON_NAME, {
         name = DISPLAY_TITLE,
         sidebarName = DISPLAY_TITLE,
         author = "CommunityAuthor",
-        isBleakfiber = false,
+        isNullgate = false,
         db = AceTracker.db and AceTracker.db.profile,
 
         -- Embed existing AceConfig table directly into BAC content pane!
@@ -453,7 +452,7 @@ end
 local f = CreateFrame("Frame")
 f:RegisterEvent("ADDON_LOADED")
 f:SetScript("OnEvent", function(self, event, name)
-    if name == ADDON_NAME or name == "BleakfibersAddonConfig-Forever" then
+    if name == ADDON_NAME or name == "NullgatesAddonConfig-Forever" then
         RegisterAceWithBAC()
     end
 end)
@@ -463,11 +462,11 @@ end)
 
 ## 10. Summary & Support
 
-By integrating with **Bleakfiber's Addon Config**, your addon gains:
+By integrating with **Nullgate's Addon Config**, your addon gains:
 * Native visibility in the Escape Game Menu.
 * Dedicated listing in the **OTHER ADDONS** sidebar.
-* Support for global `/bac mover` positioning.
+* Support for global `/nac mover` positioning.
 * Synchronized, non-destructive profile management.
 * Zero external library overhead.
 
-For questions, reference implementations, or pull requests, visit the official [Bleakfiber Addon Suite GitHub](https://github.com/Bleakfiber).
+For questions, reference implementations, or pull requests, visit the official [Nullgate Addon Suite GitHub](https://github.com/nullgatestudios).
